@@ -24,6 +24,7 @@ import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-mark
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { workspace } from '@coral-xyz/anchor';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
+import { getAllPools } from '@/app/api/getAllPool';
 
 ChartJS.register(
   CategoryScale,
@@ -44,7 +45,7 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default function DashboardFeature() {
+export default async function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
@@ -54,6 +55,7 @@ export default function DashboardFeature() {
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
   const poolPubkey  = new PublicKey("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
+  const pools = await getAllPools(program);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -215,13 +217,13 @@ export default function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
-              onClick={() => vote(program, wallet ,poolPubkey, 100 , true  ) }
+              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , true  ) }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               Yes
             </button>
             <button
-              onClick={() => vote(program, wallet ,poolPubkey, 100 , false ) }
+              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , false ) }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No
