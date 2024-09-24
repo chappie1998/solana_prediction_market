@@ -1,23 +1,23 @@
-import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 import { Program } from '@coral-xyz/anchor';
-import { PredictionMarket } from './types';
+import { WalletContextState } from '@solana/wallet-adapter-react';
+import { PredictionMarket } from '@prediction-market/anchor';
 
 export const initialize = async (
-  program: Program,
-  payer: Keypair,
+  program: Program<PredictionMarket>,
+  payer: WalletContextState,
   usdtMint: PublicKey,
   oracle: PublicKey
 ): Promise<PublicKey> => {
   const predictionMarket = Keypair.generate();
 
-  await program.rpc.initialize(usdtMint, oracle, {
-    accounts: {
+  await program.methods.initialize(usdtMint, oracle)
+    .accounts({
       predictionMarket: predictionMarket.publicKey,
-      owner: payer.publicKey,
-      systemProgram: SystemProgram.programId,
-    },
-    signers: [payer, predictionMarket],
-  });
+      owner: payer.publicKey?.toString(),
+  })
+  .signers([predictionMarket])
+  .rpc();
 
   return predictionMarket.publicKey;
 };

@@ -62,7 +62,7 @@ npm run anchor-build
 #### Start the test validator with the program deployed:
 
 ```shell
-npm run anchor-localnet
+
 ```
 
 #### Run the tests

@@ -15,6 +15,16 @@ import {
   Filler,
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import { vote } from '@/app/api/vote';
+import { useWallet } from '@solana/wallet-adapter-react';
+import * as anchor from '@coral-xyz/anchor';
+import { Program } from '@coral-xyz/anchor';
+// import { PredictionMarket } from '@/app/api/types';
+import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
+import { Keypair, PublicKey } from '@solana/web3.js';
+import { workspace } from '@coral-xyz/anchor';
+import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
+import { getAllPools } from '@/app/api/getAllPool';
 
 ChartJS.register(
   CategoryScale,
@@ -35,13 +45,17 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default function DashboardFeature() {
+export default async function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
   const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
   const [gameResult, setGameResult] = useState<boolean | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
+  const program = usePredictionMarketProgram().program;
+  const wallet = useWallet();
+  const poolPubkey  = new PublicKey("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
+  const pools = await getAllPools(program);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -203,13 +217,13 @@ export default function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
-              onClick={() => setUserVote('yes')}
+              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , true  ) }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               Yes
             </button>
             <button
-              onClick={() => setUserVote('no')}
+              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , false ) }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No

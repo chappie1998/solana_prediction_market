@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 // Declare the program ID
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
 
 #[program]
 pub mod prediction_market {
@@ -20,11 +20,10 @@ pub mod prediction_market {
 
     /// Create a new prediction pool
     /// This function creates a new pool with YES and NO token mints
-    pub fn create_pool(ctx: Context<CreatePool>, pool_id: [u8; 32], start_time: i64, end_time: i64) -> Result<()> {
+    pub fn create_pool(ctx: Context<CreatePool>, start_time: i64, end_time: i64) -> Result<()> {
         require!(ctx.accounts.prediction_market.owner == *ctx.accounts.owner.key, PredictionMarketError::NotOwner);
         
         let pool = &mut ctx.accounts.pool;
-        pool.id = pool_id;
         pool.start_time = start_time;
         pool.end_time = end_time;
         pool.pool_amount = 0;
@@ -182,7 +181,6 @@ pub struct PredictionMarket {
 /// The structure for individual prediction pools
 #[account]
 pub struct Pool {
-    pub id: [u8; 32],
     pub start_time: i64,
     pub end_time: i64,
     pub pool_amount: u64,
@@ -222,7 +220,7 @@ pub struct CreatePool<'info> {
         init,
         payer = owner,
         space = 8 + 32 + 8 + 8 + 8 + 1 + 1 + 32 + 32 + 1 + 8, // Added 8 for total_winning_tokens
-        seeds = [b"pool".as_ref(), &pool_id],
+        seeds = [b"pool".as_ref()],
         bump
     )]
     pub pool: Account<'info, Pool>,

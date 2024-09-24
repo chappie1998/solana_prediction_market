@@ -30,19 +30,18 @@ export function usePredictionMarketProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId),
   });
 
-  const greet = useMutation({
-    mutationKey: ['predictionMarket', 'greet', { cluster }],
-    mutationFn: (keypair: Keypair) => program.methods.greet().rpc(),
-    onSuccess: (signature) => {
-      transactionToast(signature);
-    },
-    onError: () => toast.error('Failed to run program'),
-  });
+  // const greet = useMutation({
+  //   mutationKey: ['predictionMarket', 'greet', { cluster }],
+  //   mutationFn: (keypair: Keypair) => program.methods.greet().rpc(),
+  //   onSuccess: (signature) => {
+  //     transactionToast(signature);
+  //   },
+  //   onError: () => toast.error('Failed to run program'),
+  // });
 
   return {
     program,
     programId,
     getProgramAccount,
-    greet,
   };
 }
