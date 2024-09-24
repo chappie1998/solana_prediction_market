@@ -1,21 +1,22 @@
 import { Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
 // import { Program, BN } from '@project-serum/anchor';
-import * as anchor from '@coral-xyz/anchor';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { Program, BN } from '@coral-xyz/anchor';
 import { findProgramAddress } from './utils';
+import {  PredictionMarket } from '@prediction-market/anchor';
+import { WalletContextState } from '@solana/wallet-adapter-react';
 
 export const createPool = async (
-  program: anchor.Program,
-  payer: Keypair,
+  program: Program<PredictionMarket>,
+  payer: WalletContextState,
   predictionMarketPubkey: PublicKey,
-  poolId: Buffer,
   startTime: number,
   endTime: number
 ): Promise<PublicKey> => {
   const [poolPubkey] = await findProgramAddress(
-    [Buffer.from('pool'), poolId],
+    [Buffer.from('pool')],
     program.programId
   );
+
 
   const [yesTokenMint] = await findProgramAddress(
     [Buffer.from('yes_token'), poolPubkey.toBuffer()],
@@ -27,19 +28,13 @@ export const createPool = async (
     program.programId
   );
 
-  await program.rpc.createPool(poolId, new anchor.BN(startTime), new anchor.BN(endTime), {
-    accounts: {
+
+  await program.methods.createPool( new BN(startTime),new BN(endTime))
+    .accounts({
       predictionMarket: predictionMarketPubkey,
-      pool: poolPubkey,
-      owner: payer.publicKey,
-      yesTokenMint,
-      noTokenMint,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: SystemProgram.programId,
-      rent: SYSVAR_RENT_PUBKEY,
-    },
-    signers: [payer],
-  });
+      owner: payer.publicKey?.toString(),
+  })
+  .rpc();
 
   return poolPubkey;
 };

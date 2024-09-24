@@ -1,3 +1,3 @@
 import { PublicKey } from '@solana/web3.js';
 
-export const PROGRAM_ID = new PublicKey('Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS');
+export const PROGRAM_ID = new PublicKey('4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM');

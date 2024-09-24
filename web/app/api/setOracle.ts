@@ -1,18 +1,21 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
-// import { Program } from '@project-serum/anchor';
-import * as anchor from '@coral-xyz/anchor';
+import { PublicKey } from '@solana/web3.js';
+import { Program  } from '@coral-xyz/anchor';
+import {  PredictionMarket } from '@prediction-market/anchor';
+import { WalletContextState } from '@solana/wallet-adapter-react';
+
 
 export const setOracle = async (
-  program: anchor.Program,
-  owner: Keypair,
+  program: Program<PredictionMarket>,
+  owner: WalletContextState,
   predictionMarketPubkey: PublicKey,
   newOracle: PublicKey
 ): Promise<void> => {
-  await program.rpc.setOracle(newOracle, {
-    accounts: {
-      predictionMarket: predictionMarketPubkey,
-      owner: owner.publicKey,
-    },
-    signers: [owner],
-  });
+
+  await program.methods.setOracle(newOracle)
+  .accounts({
+    predictionMarket: predictionMarketPubkey,
+    owner: owner.publicKey?.toString(),
+  }) // The wallet adapter will handle signing
+  .rpc();
+
 };

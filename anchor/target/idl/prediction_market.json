@@ -1,5 +1,5 @@
 {
-  "address": "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+  "address": "4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM",
   "metadata": {
     "name": "prediction_market",
     "version": "0.1.0",
@@ -97,10 +97,6 @@
                   111,
                   108
                 ]
-              },
-              {
-                "kind": "arg",
-                "path": "pool_id"
               }
             ]
           }
@@ -175,15 +171,6 @@
         }
       ],
       "args": [
-        {
-          "name": "pool_id",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
         {
           "name": "start_time",
           "type": "i64"
@@ -483,15 +470,6 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "id",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
           {
             "name": "start_time",
             "type": "i64"

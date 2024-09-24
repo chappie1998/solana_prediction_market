@@ -1,56 +1,54 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
-import { Program, BN } from '@project-serum/anchor';
-import { TOKEN_PROGRAM_ID, Token, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { PublicKey } from '@solana/web3.js';
+import { Program, BN } from '@coral-xyz/anchor';
+import { getAssociatedTokenAddress } from '@solana/spl-token';
+import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
+import { WalletContextState } from '@solana/wallet-adapter-react';
+
 
 export const vote = async (
-  program: Program,
-  payer: Keypair,
+  program: Program<PredictionMarket>,
+  payer: WalletContextState,
   poolPubkey: PublicKey,
   amount: number,
   voteYes: boolean
 ): Promise<void> => {
+  if (!payer.publicKey) {
+    throw new Error("Wallet not connected");
+  }
+
   const pool = await program.account.pool.fetch(poolPubkey);
-  const userUsdtAccount = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    new PublicKey(pool.usdtMint),
+  const predictionmarket = await program.account.predictionMarket.fetch(PREDICTION_MARKET_PROGRAM_ID);
+  const userUsdtAccount = await getAssociatedTokenAddress(
+    new PublicKey(predictionmarket.usdtMint),
     payer.publicKey
   );
 
-  const poolUsdtAccount = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    new PublicKey(pool.usdtMint),
+  const poolUsdtAccount = await getAssociatedTokenAddress(
+    new PublicKey(predictionmarket.usdtMint),
     poolPubkey,
     true
   );
 
-  const userYesTokenAccount = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
+  const userYesTokenAccount = await getAssociatedTokenAddress(
     new PublicKey(pool.yesTokenMint),
     payer.publicKey
   );
 
-  const userNoTokenAccount = await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
+  const userNoTokenAccount = await getAssociatedTokenAddress(
     new PublicKey(pool.noTokenMint),
     payer.publicKey
   );
 
-  await program.rpc.vote(new BN(amount), voteYes, {
-    accounts: {
+  await program.methods.vote(new BN(amount), voteYes)
+    .accounts({
       pool: poolPubkey,
-      user: payer.publicKey,
+      user: payer.publicKey?.toString(),
       userUsdtAccount,
       poolUsdtAccount,
       yesTokenMint: new PublicKey(pool.yesTokenMint),
       noTokenMint: new PublicKey(pool.noTokenMint),
       userYesTokenAccount,
       userNoTokenAccount,
-      tokenProgram: TOKEN_PROGRAM_ID,
-    },
-    signers: [payer],
-  });
+    }) // The wallet adapter will handle signing
+    .rpc();
 };
