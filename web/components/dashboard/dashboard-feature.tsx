@@ -54,7 +54,6 @@ export default async function DashboardFeature() {
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
-  const poolPubkey  = new PublicKey("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
   const pools = await getAllPools(program);
 
   useEffect(() => {
