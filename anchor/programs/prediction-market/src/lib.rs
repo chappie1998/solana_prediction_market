@@ -1,11 +1,19 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
+use light_compressed_token::light_compressed_token::{create_token_pool, mint_to, burn};
+// use light_compressed_token::mint_sdk::create_create_token_pool_instruction;
+use light_compressed_token::program::LightCompressedToken;
+use light_sdk::{light_system_accounts, LightTraits};
+use light_compressed_token::{mint_sdk::create_create_token_pool_instruction, CreateTokenPoolInstruction};
+
+// use light_compressed_token::process_transfer::CreateTokenPoolInstruction;
 
 // Declare the program ID
 declare_id!("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
 
 #[program]
 pub mod prediction_market {
+
     use super::*;
 
     /// Initialize the prediction market
@@ -32,6 +40,15 @@ pub mod prediction_market {
         pool.no_token_mint = ctx.accounts.no_token_mint.key();
         pool.bump = ctx.bumps.pool;
         pool.total_winning_tokens = 0; // Initialize to 0, will be set when result is declared
+        let yes_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
+        let no_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
+        let cpi_program = ctx.accounts.compressed_token_program.to_account_info();
+        let seeds = &[
+            pool.to_account_info().key.as_ref(),
+            &[pool.bump],
+        ];
+        let signer = &[&seeds[..]];
+        // let cpi_ctx = CpiContext::new_with_signer(cpi_program, yes_compressed_token_.accounts, signer);
 
         Ok(())
     }
@@ -245,6 +262,7 @@ pub struct CreatePool<'info> {
     )]
     pub no_token_mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
+    pub compressed_token_program :Program<'info, LightCompressedToken>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
 }
@@ -267,6 +285,7 @@ pub struct Vote<'info> {
     pub user_yes_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub user_no_token_account: Account<'info, TokenAccount>,
+    pub compressed_token_program :Program<'info, LightCompressedToken>,
     pub token_program: Program<'info, Token>,
 }
 
@@ -309,6 +328,7 @@ pub struct Claim<'info> {
     pub user_yes_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub user_no_token_account: Account<'info, TokenAccount>,
+    pub compressed_token_program :Program<'info, LightCompressedToken>,
     pub token_program: Program<'info, Token>,
 }
 
