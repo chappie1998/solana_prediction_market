@@ -9,7 +9,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 // use light_compressed_token::process_transfer::CreateTokenPoolInstruction;
 
 // Declare the program ID
-declare_id!("cq7p8jCiFp5nnwtR3S3QjChM1xonht9xtyZTycjz57E");
+declare_id!("EhcnHR2STHGusK4EqCJ7Bh2UTv9pPFFZTp9h3776A7Tq");
 
 #[program]
 pub mod prediction_market {

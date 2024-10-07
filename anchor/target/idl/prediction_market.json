@@ -1,5 +1,5 @@
 {
-  "address": "cq7p8jCiFp5nnwtR3S3QjChM1xonht9xtyZTycjz57E",
+  "address": "EhcnHR2STHGusK4EqCJ7Bh2UTv9pPFFZTp9h3776A7Tq",
   "metadata": {
     "name": "prediction_market",
     "version": "0.1.0",
@@ -13,16 +13,7 @@
         "Claim rewards from an ended prediction pool",
         "Users can claim their rewards based on their winning votes"
       ],
-      "discriminator": [
-        62,
-        198,
-        214,
-        193,
-        213,
-        159,
-        108,
-        210
-      ],
+      "discriminator": [62, 198, 214, 193, 213, 159, 108, 210],
       "accounts": [
         {
           "name": "pool",
@@ -69,16 +60,7 @@
         "Create a new prediction pool",
         "This function creates a new pool with YES and NO token mints"
       ],
-      "discriminator": [
-        233,
-        146,
-        209,
-        142,
-        207,
-        104,
-        64,
-        188
-      ],
+      "discriminator": [233, 146, 209, 142, 207, 104, 64, 188],
       "accounts": [
         {
           "name": "prediction_market",
@@ -91,12 +73,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
+                "value": [112, 111, 111, 108]
               },
               {
                 "kind": "arg",
@@ -117,17 +94,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  121,
-                  101,
-                  115,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110
-                ]
+                "value": [121, 101, 115, 95, 116, 111, 107, 101, 110]
               },
               {
                 "kind": "account",
@@ -143,16 +110,7 @@
             "seeds": [
               {
                 "kind": "const",
-                "value": [
-                  110,
-                  111,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110
-                ]
+                "value": [110, 111, 95, 116, 111, 107, 101, 110]
               },
               {
                 "kind": "account",
@@ -191,16 +149,7 @@
         "Declare the result of a prediction pool",
         "Only the oracle can call this function to set the winner"
       ],
-      "discriminator": [
-        205,
-        129,
-        155,
-        217,
-        131,
-        167,
-        175,
-        38
-      ],
+      "discriminator": [205, 129, 155, 217, 131, 167, 175, 38],
       "accounts": [
         {
           "name": "prediction_market"
@@ -233,16 +182,7 @@
         "Initialize the prediction market",
         "This function sets up the main prediction market account"
       ],
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
+      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
       "accounts": [
         {
           "name": "prediction_market",
@@ -276,16 +216,7 @@
         "Pause an active prediction pool",
         "Only the owner can pause a pool"
       ],
-      "discriminator": [
-        160,
-        15,
-        12,
-        189,
-        160,
-        0,
-        243,
-        245
-      ],
+      "discriminator": [160, 15, 12, 189, 160, 0, 243, 245],
       "accounts": [
         {
           "name": "prediction_market"
@@ -307,16 +238,7 @@
         "Set a new oracle for the prediction market",
         "Only the owner can change the oracle"
       ],
-      "discriminator": [
-        186,
-        128,
-        81,
-        104,
-        74,
-        79,
-        18,
-        224
-      ],
+      "discriminator": [186, 128, 81, 104, 74, 79, 18, 224],
       "accounts": [
         {
           "name": "prediction_market",
@@ -340,16 +262,7 @@
         "Vote in a prediction pool",
         "Users can vote YES or NO by transferring USDT and receiving corresponding tokens"
       ],
-      "discriminator": [
-        227,
-        110,
-        155,
-        23,
-        136,
-        126,
-        172,
-        25
-      ],
+      "discriminator": [227, 110, 155, 23, 136, 126, 172, 25],
       "accounts": [
         {
           "name": "pool",
@@ -403,29 +316,11 @@
   "accounts": [
     {
       "name": "Pool",
-      "discriminator": [
-        241,
-        154,
-        109,
-        4,
-        17,
-        177,
-        109,
-        188
-      ]
+      "discriminator": [241, 154, 109, 4, 17, 177, 109, 188]
     },
     {
       "name": "PredictionMarket",
-      "discriminator": [
-        117,
-        150,
-        97,
-        152,
-        119,
-        58,
-        51,
-        58
-      ]
+      "discriminator": [117, 150, 97, 152, 119, 58, 51, 58]
     }
   ],
   "errors": [
@@ -468,19 +363,14 @@
   "types": [
     {
       "name": "Pool",
-      "docs": [
-        "The structure for individual prediction pools"
-      ],
+      "docs": ["The structure for individual prediction pools"],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "id",
             "type": {
-              "array": [
-                "u8",
-                32
-              ]
+              "array": ["u8", 32]
             }
           },
           {
@@ -528,9 +418,7 @@
     },
     {
       "name": "PoolStatus",
-      "docs": [
-        "The possible statuses of a prediction pool"
-      ],
+      "docs": ["The possible statuses of a prediction pool"],
       "type": {
         "kind": "enum",
         "variants": [
@@ -548,9 +436,7 @@
     },
     {
       "name": "PredictionMarket",
-      "docs": [
-        "The main prediction market account structure"
-      ],
+      "docs": ["The main prediction market account structure"],
       "type": {
         "kind": "struct",
         "fields": [

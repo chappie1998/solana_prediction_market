@@ -17,12 +17,12 @@ import {
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { vote } from '@/app/api/vote';
 import { useWallet } from '@solana/wallet-adapter-react';
-import * as anchor from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
-// import { PredictionMarket } from '@/app/api/types';
-import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
+import {
+  PREDICTION_MARKET_PROGRAM_ID,
+  PredictionMarket,
+} from '@prediction-market/anchor';
 import { Keypair, PublicKey } from '@solana/web3.js';
-import { workspace } from '@coral-xyz/anchor';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
 import { getAllPools } from '@/app/api/getAllPool';
 import { createPool } from '@/app/api/createPool';
@@ -48,18 +48,35 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default async function DashboardFeature() {
+export default function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
   const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
   const [gameResult, setGameResult] = useState<boolean | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
+  const [pools, setPools] = useState<any[]>([]); // Adjust the type as needed
+
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
-  const pools = await getAllPools(program);
-  const usdt_mint = new PublicKey("G4pN19MzNyHqzas1WFJzHSpxVHJQaozojBoZtiHtbgT5");
-  const oracle = new PublicKey("BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq");
+  const usdt_mint = new PublicKey(
+    'G4pN19MzNyHqzas1WFJzHSpxVHJQaozojBoZtiHtbgT5'
+  );
+  const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
+
+  useEffect(() => {
+    // Fetch pools data
+    const fetchPools = async () => {
+      try {
+        const fetchedPools = await getAllPools(program);
+        setPools(fetchedPools);
+      } catch (error) {
+        console.error('Error fetching pools:', error);
+      }
+    };
+
+    fetchPools();
+  }, [program]);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -103,7 +120,8 @@ export default async function DashboardFeature() {
       clearInterval(priceInterval);
       clearInterval(timer);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPrice]);
 
   const determineResult = () => {
     if (currentPrice !== null) {
@@ -221,32 +239,42 @@ export default async function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
-              onClick={() => initialize(program, wallet ,usdt_mint, oracle  ) }
+              onClick={() => initialize(program, wallet, usdt_mint, oracle)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               INIT
             </button>
             <button
-              onClick={() => createPool(program, wallet ,usdt_mint, 100, 100  ) }
+              onClick={() => createPool(program, wallet, usdt_mint, 100, 100)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               create_pool
             </button>
 
             <button
-              onClick={() => declareResult(program, wallet ,usePredictionMarketProgram().programId, pools[0].pubkey,  1  ) }
+              onClick={() =>
+                declareResult(
+                  program,
+                  wallet,
+                  usePredictionMarketProgram().programId,
+                  pools[0]?.pubkey,
+                  1
+                )
+              }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , true  ) }
+              onClick={() => vote(program, wallet, pools[0]?.pubkey, 100, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes
             </button>
             <button
-              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , false ) }
+              onClick={() =>
+                vote(program, wallet, pools[0]?.pubkey, 100, false)
+              }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No
