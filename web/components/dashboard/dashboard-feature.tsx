@@ -25,6 +25,9 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 import { workspace } from '@coral-xyz/anchor';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
 import { getAllPools } from '@/app/api/getAllPool';
+import { createPool } from '@/app/api/createPool';
+import { initialize } from '@/app/api/init';
+import { declareResult } from '@/app/api/declare_result';
 
 ChartJS.register(
   CategoryScale,
@@ -55,6 +58,8 @@ export default async function DashboardFeature() {
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
   const pools = await getAllPools(program);
+  const usdt_mint = new PublicKey("G4pN19MzNyHqzas1WFJzHSpxVHJQaozojBoZtiHtbgT5");
+  const oracle = new PublicKey("BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq");
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -216,10 +221,29 @@ export default async function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
+              onClick={() => initialize(program, wallet ,usdt_mint, oracle  ) }
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              INIT
+            </button>
+            <button
+              onClick={() => createPool(program, wallet ,usdt_mint, 100, 100  ) }
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              create_pool
+            </button>
+
+            <button
+              onClick={() => declareResult(program, wallet ,usePredictionMarketProgram().programId, pools[0].pubkey,  1  ) }
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              declare result
+            </button>
+            <button
               onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , true  ) }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
-              Yes
+              yes
             </button>
             <button
               onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , false ) }
