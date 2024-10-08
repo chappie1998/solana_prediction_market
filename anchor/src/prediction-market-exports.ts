@@ -9,7 +9,7 @@ export { PredictionMarket, PredictionMarketIDL };
 
 // The programId is imported from the program IDL.
 export const PREDICTION_MARKET_PROGRAM_ID = new PublicKey(
-  "BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA"
+  PredictionMarketIDL.metadata.address
 );
 
 // This is a helper function to get the PredictionMarket Anchor program.
@@ -23,7 +23,6 @@ export function getPredictionMarketProgramId(cluster: Cluster) {
     case 'devnet':
     case 'testnet':
     case 'mainnet-beta':
-    case 'custom':
     default:
       return PREDICTION_MARKET_PROGRAM_ID;
   }

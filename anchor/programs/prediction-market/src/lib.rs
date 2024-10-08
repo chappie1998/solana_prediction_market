@@ -9,7 +9,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 // use light_compressed_token::process_transfer::CreateTokenPoolInstruction;
 
 // Declare the program ID
-declare_id!("BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA");
+declare_id!("BA7zQC5fyuyV3d1XhnKuEHxcwHBLh84eSP2dEN6x2d1P");
 
 #[program]
 pub mod prediction_market {
@@ -28,18 +28,23 @@ pub mod prediction_market {
 
     /// Create a new prediction pool
     /// This function creates a new pool with YES and NO token mints
-    pub fn create_pool(ctx: Context<CreatePool>, pool_id: [u8; 32], start_time: i64, end_time: i64) -> Result<()> {
+    pub fn create_pool(ctx: Context<CreatePool>, pool_id: [u8; 32], start_time: i64, end_time: i64, bump: u8) -> Result<()> {
         require!(ctx.accounts.prediction_market.owner == *ctx.accounts.owner.key, PredictionMarketError::NotOwner);
-        
+        let current_timestamp = Clock::get()?.unix_timestamp;
+        // require!(current_timestamp <= end_time, PredictionMarketError::PoolEnded);
+        // require!(current_timestamp >= start_time, PredictionMarketError::PoolNotStarted);
+
         let pool = &mut ctx.accounts.pool;
         pool.id = pool_id;
         pool.start_time = start_time;
         pool.end_time = end_time;
         pool.pool_amount = 0;
+        pool.yes_amount = 0;
+        pool.no_amount = 0;
         pool.status = PoolStatus::Active;
         pool.yes_token_mint = ctx.accounts.yes_token_mint.key();
         pool.no_token_mint = ctx.accounts.no_token_mint.key();
-        pool.bump = ctx.bumps.pool;
+        pool.bump = bump;
         pool.total_winning_tokens = 0; // Initialize to 0, will be set when result is declared
         // let yes_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
         // let no_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
@@ -59,16 +64,20 @@ pub mod prediction_market {
     pub fn vote(ctx: Context<Vote>, amount: u64, vote_yes: bool) -> Result<()> {
         let pool = &mut ctx.accounts.pool;
         let current_timestamp = Clock::get()?.unix_timestamp;
-        
         // Check if the pool is active and within the voting timeframe
         require!(current_timestamp <= pool.end_time, PredictionMarketError::PoolEnded);
         require!(current_timestamp >= pool.start_time, PredictionMarketError::PoolNotStarted);
         require!(pool.status == PoolStatus::Active, PredictionMarketError::PoolNotActive);
 
-        // Update the pool amount
-        pool.pool_amount = pool.pool_amount.checked_add(amount).unwrap();
+        // Verify the pool signer
+        let seeds = &[
+            b"pool".as_ref(),
+            &pool.id,
+            &[pool.bump]
+        ];
+        let signer = &[&seeds[..]];
 
-        // Transfer USDT tokens from user to pool
+        // Transfer USDT from user to pool
         let cpi_accounts = Transfer {
             from: ctx.accounts.user_usdt_account.to_account_info(),
             to: ctx.accounts.pool_usdt_account.to_account_info(),
@@ -78,20 +87,38 @@ pub mod prediction_market {
         let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
         token::transfer(cpi_ctx, amount)?;
 
-        // Mint YES or NO tokens to user
-        let seeds = &[
-            pool.to_account_info().key.as_ref(),
-            &[pool.bump],
-        ];
-        let signer = &[&seeds[..]];
-        let cpi_accounts = token::MintTo {
-            mint: if vote_yes { ctx.accounts.yes_token_mint.to_account_info() } else { ctx.accounts.no_token_mint.to_account_info() },
-            to: if vote_yes { ctx.accounts.user_yes_token_account.to_account_info() } else { ctx.accounts.user_no_token_account.to_account_info() },
-            authority: pool.to_account_info(),
-        };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
-        token::mint_to(cpi_ctx, amount)?;
+        // Mint YES or NO tokens to the user
+        if vote_yes {
+            let cpi_accounts = token::MintTo {
+                mint: ctx.accounts.yes_token_mint.to_account_info(),
+                to: ctx.accounts.user_yes_token_account.to_account_info(),
+                authority: ctx.accounts.pool_signer.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::mint_to(cpi_ctx, amount)?;
+        } else {
+            let cpi_accounts = token::MintTo {
+                mint: ctx.accounts.no_token_mint.to_account_info(),
+                to: ctx.accounts.user_no_token_account.to_account_info(),
+                authority: ctx.accounts.pool_signer.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::mint_to(cpi_ctx, amount)?;
+        }
+
+        // Update pool state
+        if vote_yes {
+            pool.yes_amount = pool.yes_amount.checked_add(amount).unwrap();
+            // Update the pool amount
+            pool.pool_amount = pool.pool_amount.checked_add(amount).unwrap();
+
+        } else {
+            pool.no_amount = pool.no_amount.checked_add(amount).unwrap();
+            // Update the pool amount
+            pool.pool_amount = pool.pool_amount.checked_add(amount).unwrap();
+        }
 
         Ok(())
     }
@@ -101,7 +128,9 @@ pub mod prediction_market {
     pub fn declare_result(ctx: Context<DeclareResult>, winner: u8) -> Result<()> {
         let prediction_market = &ctx.accounts.prediction_market;
         let pool = &mut ctx.accounts.pool;
+        let current_timestamp = Clock::get()?.unix_timestamp;
 
+        require!(current_timestamp >= pool.end_time, PredictionMarketError::PoolNotEnded);
         require!(*ctx.accounts.oracle.key == prediction_market.oracle, PredictionMarketError::NotOracle);
         require!(pool.status == PoolStatus::Active, PredictionMarketError::PoolNotActive);
 
@@ -153,8 +182,9 @@ pub mod prediction_market {
 
         // Transfer reward (USDT) tokens to user
         let seeds = &[
-            pool.to_account_info().key.as_ref(),
-            &[pool.bump],
+            b"pool".as_ref(),
+            &pool.id,
+            &[pool.bump]
         ];
         let signer = &[&seeds[..]];
         let cpi_accounts = Transfer {
@@ -167,14 +197,28 @@ pub mod prediction_market {
         token::transfer(cpi_ctx, reward_amount)?;
 
         // Burn the user's winning tokens
-        let cpi_accounts = token::Burn {
-            mint: winning_token_account.to_account_info(),
-            from: winning_token_account.to_account_info(),
-            authority: ctx.accounts.user.to_account_info(),
+
+        if pool.winner == 1 { 
+            let cpi_accounts = token::Burn {
+                mint: ctx.accounts.yes_token_mint.to_account_info(),
+                from: winning_token_account.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::burn(cpi_ctx, user_winning_balance)?;
+        } else { 
+            let cpi_accounts = token::Burn {
+                mint: ctx.accounts.no_token_mint.to_account_info(),
+                from: winning_token_account.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            };
+            let cpi_program = ctx.accounts.token_program.to_account_info();
+            let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer);
+            token::burn(cpi_ctx, user_winning_balance)?;
         };
-        let cpi_program = ctx.accounts.token_program.to_account_info();
-        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-        token::burn(cpi_ctx, user_winning_balance)?;
+
+        
 
         Ok(())
     }
@@ -203,6 +247,8 @@ pub struct Pool {
     pub start_time: i64,
     pub end_time: i64,
     pub pool_amount: u64,
+    pub yes_amount: u64,
+    pub no_amount: u64,
     pub status: PoolStatus,
     pub winner: u8,
     pub yes_token_mint: Pubkey,
@@ -231,14 +277,14 @@ pub struct Initialize<'info> {
 
 /// Accounts required for creating a new prediction pool
 #[derive(Accounts)]
-#[instruction(pool_id: [u8; 32])]
+#[instruction(pool_id: [u8; 32], bump: u8)]
 pub struct CreatePool<'info> {
     #[account(mut)]
     pub prediction_market: Account<'info, PredictionMarket>,
     #[account(
         init,
         payer = owner,
-        space = 8 + 32 + 8 + 8 + 8 + 1 + 1 + 32 + 32 + 1 + 8, // Added 8 for total_winning_tokens
+        space = 8 + 32 + 8 + 8 + 8 + 1 + 1 + 32 + 32 + 1 + 8 + 8 + 8, // Added 8 for total_winning_tokens
         seeds = [b"pool".as_ref(), &pool_id],
         bump
     )]
@@ -271,21 +317,25 @@ pub struct CreatePool<'info> {
 /// Accounts required for voting in a prediction pool
 #[derive(Accounts)]
 pub struct Vote<'info> {
-    #[account(mut)]
+    #[account(mut, seeds = [b"pool".as_ref(), &pool.id], bump = pool.bump)]
     pub pool: Account<'info, Pool>,
+    #[account(mut)]
     pub user: Signer<'info>,
     #[account(mut)]
     pub user_usdt_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub pool_usdt_account: Account<'info, TokenAccount>,
-    #[account(mut, address = pool.yes_token_mint)]
-    pub yes_token_mint: Account<'info, Mint>,
-    #[account(mut, address = pool.no_token_mint)]
-    pub no_token_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub yes_token_mint: Account<'info, token::Mint>,
+    #[account(mut)]
+    pub no_token_mint: Account<'info, token::Mint>,
     #[account(mut)]
     pub user_yes_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub user_no_token_account: Account<'info, TokenAccount>,
+    /// CHECK: This is the PDA that signs for the pool
+    #[account(mut, seeds = [b"pool".as_ref(), &pool.id], bump = pool.bump)]
+    pub pool_signer: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token>,
 }
 
@@ -357,4 +407,8 @@ pub enum PredictionMarketError {
     PoolNotEnded,
     #[msg("Result has not been declared")]
     ResultNotDeclared,
+    // #[msg("End Time should be greater than current time stamp")]
+    // IntoThePast,
+    // #[msg(" Time should be greater than current time stamp")]
+    // ResultNotDeclared,
 }

@@ -101,6 +101,10 @@ export type PredictionMarket = {
         {
           "name": "endTime",
           "type": "i64"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
         }
       ]
     },
@@ -118,7 +122,7 @@ export type PredictionMarket = {
         },
         {
           "name": "user",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -148,6 +152,11 @@ export type PredictionMarket = {
         },
         {
           "name": "userNoTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSigner",
           "isMut": true,
           "isSigner": false
         },
@@ -342,6 +351,14 @@ export type PredictionMarket = {
           },
           {
             "name": "poolAmount",
+            "type": "u64"
+          },
+          {
+            "name": "yesAmount",
+            "type": "u64"
+          },
+          {
+            "name": "noAmount",
             "type": "u64"
           },
           {
@@ -561,6 +578,10 @@ export const IDL: PredictionMarket = {
         {
           "name": "endTime",
           "type": "i64"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
         }
       ]
     },
@@ -578,7 +599,7 @@ export const IDL: PredictionMarket = {
         },
         {
           "name": "user",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -608,6 +629,11 @@ export const IDL: PredictionMarket = {
         },
         {
           "name": "userNoTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSigner",
           "isMut": true,
           "isSigner": false
         },
@@ -802,6 +828,14 @@ export const IDL: PredictionMarket = {
           },
           {
             "name": "poolAmount",
+            "type": "u64"
+          },
+          {
+            "name": "yesAmount",
+            "type": "u64"
+          },
+          {
+            "name": "noAmount",
             "type": "u64"
           },
           {

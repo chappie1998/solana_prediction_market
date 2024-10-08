@@ -13,12 +13,19 @@ export const createPool = async (
   startTime: number,
   endTime: number
 ): Promise<PublicKey> => {
-
+  if (!payer.publicKey) {
+    throw new Error("Wallet not connected");
+  }
   // Generate a new pool ID
   const poolId = Buffer.from(Keypair.generate().publicKey.toBytes()).toJSON().data;
 
-  const [poolPubkey] = await findProgramAddress(
-    [Buffer.from('pool'), Buffer.from(poolId)],
+  // const [poolPubkey] = await findProgramAddress(
+  //   [Buffer.from('pool'), Buffer.from(poolId)],
+  //   program.programId
+  // );
+
+  const [poolPubkey, bump] = await findProgramAddress(
+    [Buffer.from("pool"), Buffer.from(poolId)],
     program.programId
   );
 
@@ -35,7 +42,7 @@ export const createPool = async (
 
   // const poolIdU8Array32 = bufferToU8Array32(poolId);
   
-  await program.methods.createPool( poolId, new BN(startTime),new BN(endTime))
+  await program.methods.createPool( poolId, new BN(startTime),new BN(endTime), bump)
     .accounts({
       predictionMarket: predictionMarketPubkey,
       pool: poolPubkey,
@@ -47,7 +54,7 @@ export const createPool = async (
       rent: SYSVAR_RENT_PUBKEY,
   })
   .rpc();
-
+  console.log("poolPubkey :", poolPubkey.toBase58())
   return poolPubkey;
 };
 
