@@ -66,8 +66,15 @@ export default function DashboardFeature() {
   const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
 
   const predictionmarketData = new PublicKey(
-    '2FgsfwhhtcJK1a3tfRWaGMdKaUZwoQVXkAqPZaBXyv5F'
+    '9bx5asGzXneB7Ud2J9nkHDcQSPXZ8iTAfGZxWRYByGLq'
   );
+
+  const poolkey = new PublicKey(
+    '9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd'
+  );
+  
+  // 9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd
+  console.log("pools",pools);
 
   useEffect(() => {
     // Fetch pools data
@@ -254,9 +261,8 @@ export default function DashboardFeature() {
                   program,
                   wallet,
                   predictionmarketData,
-                  Buffer.from('1'),
-                  1728369900,
-                  1728370200
+                  1728382557,
+                  1728382857
                 )
               }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
@@ -270,7 +276,7 @@ export default function DashboardFeature() {
                   program,
                   wallet,
                   usePredictionMarketProgram().programId,
-                  pools[0]?.pubkey,
+                  poolkey,
                   1
                 )
               }
@@ -279,14 +285,14 @@ export default function DashboardFeature() {
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet, pools[0]?.pubkey, 150, true)}
+              onClick={() => vote(program, wallet, poolkey, 150, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes
             </button>
             <button
               onClick={() =>
-                vote(program, wallet, pools[0]?.pubkey, 100, false)
+                vote(program, wallet, poolkey, 100, false)
               }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >

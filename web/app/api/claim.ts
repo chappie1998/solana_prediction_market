@@ -15,14 +15,15 @@ export const claim = async (
   }
 
   const pool = await program.account.pool.fetch(poolPubkey);
-  const predictionmarket = await program.account.predictionMarket.fetch(PREDICTION_MARKET_PROGRAM_ID);
+  // const predictionmarket = await program.account.predictionMarket.fetch(PREDICTION_MARKET_PROGRAM_ID);
+  const usdtMint = new PublicKey("EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe");
   const userUsdtAccount = await getAssociatedTokenAddress(
-    new PublicKey(predictionmarket.usdtMint),
+    usdtMint,
     user.publicKey
   );
 
   const poolUsdtAccount = await getAssociatedTokenAddress(
-    new PublicKey(predictionmarket.usdtMint),
+    usdtMint,
     poolPubkey,
     true
   );

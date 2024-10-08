@@ -2,14 +2,14 @@
 import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import { Cluster, PublicKey } from '@solana/web3.js';
 import PredictionMarketIDL from '../target/idl/prediction_market.json';
-import { IDL, type PredictionMarket } from '../target/types/prediction_market.ts';
+import { IDL, type PredictionMarket } from '../target/types/prediction_market';
 
 // Re-export the generated IDL and type
 export { PredictionMarket, PredictionMarketIDL };
 
 // The programId is imported from the program IDL.
 export const PREDICTION_MARKET_PROGRAM_ID = new PublicKey(
-  PredictionMarketIDL.metadata.address
+  "BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA"
 );
 
 // This is a helper function to get the PredictionMarket Anchor program.

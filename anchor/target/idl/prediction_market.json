@@ -1,4 +1,3 @@
-
 {
   "version": "0.1.0",
   "name": "prediction_market",
@@ -456,8 +455,5 @@
       "name": "ResultNotDeclared",
       "msg": "Result has not been declared"
     }
-  ],
-  "metadata": {
-    "address": "HMMUKstvMnm4hLgZa1Sbre9Dd47kj8mAUNaD7VWxz1CF"
-  }
+  ]
 }

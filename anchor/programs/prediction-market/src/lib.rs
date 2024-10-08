@@ -9,7 +9,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 // use light_compressed_token::process_transfer::CreateTokenPoolInstruction;
 
 // Declare the program ID
-declare_id!("HMMUKstvMnm4hLgZa1Sbre9Dd47kj8mAUNaD7VWxz1CF");
+declare_id!("BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA");
 
 #[program]
 pub mod prediction_market {
@@ -32,6 +32,7 @@ pub mod prediction_market {
         require!(ctx.accounts.prediction_market.owner == *ctx.accounts.owner.key, PredictionMarketError::NotOwner);
         
         let pool = &mut ctx.accounts.pool;
+        pool.id = pool_id;
         pool.start_time = start_time;
         pool.end_time = end_time;
         pool.pool_amount = 0;

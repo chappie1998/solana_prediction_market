@@ -10,12 +10,15 @@ export const createPool = async (
   program: Program<PredictionMarket>,
   payer: WalletContextState,
   predictionMarketPubkey: PublicKey,
-  poolId: Buffer,
   startTime: number,
   endTime: number
 ): Promise<PublicKey> => {
+
+  // Generate a new pool ID
+  const poolId = Buffer.from(Keypair.generate().publicKey.toBytes()).toJSON().data;
+
   const [poolPubkey] = await findProgramAddress(
-    [Buffer.from('pool'), poolId],
+    [Buffer.from('pool'), Buffer.from(poolId)],
     program.programId
   );
 
@@ -30,9 +33,9 @@ export const createPool = async (
     program.programId
   );
 
-  const poolIdU8Array32 = bufferToU8Array32(poolId);
+  // const poolIdU8Array32 = bufferToU8Array32(poolId);
   
-  await program.methods.createPool( poolIdU8Array32, new BN(startTime),new BN(endTime))
+  await program.methods.createPool( poolId, new BN(startTime),new BN(endTime))
     .accounts({
       predictionMarket: predictionMarketPubkey,
       pool: poolPubkey,
