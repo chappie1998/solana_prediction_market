@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Line } from 'react-chartjs-2';
 import {
@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { vote } from '@/app/api/vote';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, WalletContextState } from '@solana/wallet-adapter-react';
 import {
   PREDICTION_MARKET_PROGRAM_ID,
   PredictionMarket,
@@ -29,6 +29,7 @@ import { createPool } from '@/app/api/createPool';
 import { initialize } from '@/app/api/init';
 import { declareResult } from '@/app/api/declare_result';
 import { claim } from '@/app/api/claim';
+import { Program } from '@coral-xyz/anchor';
 // import { getPoolData } from '@/app/api/getPoolData';
 
 ChartJS.register(
@@ -57,21 +58,26 @@ export default function DashboardFeature() {
   const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
   const [gameResult, setGameResult] = useState<boolean | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
+  // var predictionmarketDataadd = '8hkSePwXVRip7uBWRb8EhKziRGAgaGTPdXKw1FeeT3Yb';
+  // var poolkeyadd = '8hkSePwXVRip7uBWRb8EhKziRGAgaGTPdXKw1FeeT3Yb';
   // const [pools, setPools] = useState<any[]>([]); // Adjust the type as needed
+  const [predictionmarketDataadd, setPredictionmarketDataadd] =
+    useState<PublicKey>('8hkSePwXVRip7uBWRb8EhKziRGAgaGTPdXKw1FeeT3Yb');
+  const [poolkeyadd, setPoolkeyadd] = useState(
+    '8hkSePwXVRip7uBWRb8EhKziRGAgaGTPdXKw1FeeT3Yb'
+  );
 
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
   const usdt_mint = new PublicKey(
     'EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe'
   );
-  const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
+  const oracle = new PublicKey('8hkSePwXVRip7uBWRb8EhKziRGAgaGTPdXKw1FeeT3Yb');
 
-  const predictionmarketData = new PublicKey(
-    'H6uKzMuZCryKA9TtpToy44GuhSxMngV1BgJE2tCq7cxd'
-  );
+  // var predictionmarketData = new PublicKey(predictionmarketDataadd);
 
-  const poolkey = new PublicKey('85D2RJNT5sy5XB2ojxmpbbZ8CydmrXhpBaNcoTDtdPJB');;
-  
+  // var poolkey = new PublicKey(poolkeyadd);
+
   // 9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd
   // console.log("pools",pools);
 
@@ -88,6 +94,20 @@ export default function DashboardFeature() {
 
   //   fetchPools();
   // }, [program]);
+
+  const predictionmarketData = useMemo(() => {
+    if (predictionmarketDataadd) {
+      return new PublicKey(predictionmarketDataadd);
+    }
+    return null;
+  }, [predictionmarketDataadd]);
+
+  const poolkey = useMemo(() => {
+    if (poolkeyadd) {
+      return new PublicKey(poolkeyadd);
+    }
+    return null;
+  }, [poolkeyadd]);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -219,6 +239,29 @@ export default function DashboardFeature() {
     },
   };
 
+  const callinitialize = async (
+    program: any,
+    wallet: any,
+    usdt_mint: any,
+    oracle: any
+  ) => {
+    const res = await initialize(program, wallet, usdt_mint, oracle);
+    setPredictionmarketDataadd(res);
+
+    console.log(predictionmarketDataadd);
+  };
+
+  const callcreatePool = async (
+    program: Program<PredictionMarket>,
+    wallet: WalletContextState,
+    predictionmarketData: PublicKey
+  ) => {
+    const res = await createPool(program, wallet, predictionmarketData);
+    setPoolkeyadd(res);
+
+    console.log(poolkeyadd);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-4 text-center">
@@ -249,20 +292,14 @@ export default function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
-              onClick={() => initialize(program, wallet, usdt_mint, oracle)}
+              onClick={() => callinitialize(program, wallet, usdt_mint, oracle)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               INIT
             </button>
             <button
               onClick={() =>
-                createPool(
-                  program,
-                  wallet,
-                  predictionmarketData,
-                  1728382557,
-                  1728402013
-                )
+                callcreatePool(program, wallet, predictionmarketData)
               }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
@@ -271,13 +308,7 @@ export default function DashboardFeature() {
 
             <button
               onClick={() =>
-                declareResult(
-                  program,
-                  wallet,
-                  predictionmarketData,
-                  poolkey,
-                  1
-                )
+                declareResult(program, wallet, predictionmarketData, poolkey, 1)
               }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
@@ -290,17 +321,13 @@ export default function DashboardFeature() {
               yes
             </button>
             <button
-              onClick={() =>
-                vote(program, wallet, poolkey, 100000000, false)
-              }
+              onClick={() => vote(program, wallet, poolkey, 100000000, false)}
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No
             </button>
             <button
-              onClick={() =>
-                claim(program, wallet, poolkey)
-              }
+              onClick={() => claim(program, wallet, poolkey)}
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               claim
