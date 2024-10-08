@@ -28,6 +28,7 @@ import { getAllPools } from '@/app/api/getAllPool';
 import { createPool } from '@/app/api/createPool';
 import { initialize } from '@/app/api/init';
 import { declareResult } from '@/app/api/declare_result';
+import { getPoolData } from '@/app/api/getPoolData';
 
 ChartJS.register(
   CategoryScale,
@@ -48,7 +49,7 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default function DashboardFeature() {
+export default async function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
@@ -268,7 +269,7 @@ export default function DashboardFeature() {
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet, pools[0]?.pubkey, 150, true)}
+              onClick={() => vote(program, wallet, pools[0].pubkey, 150, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes

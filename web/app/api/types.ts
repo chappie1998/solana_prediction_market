@@ -9,6 +9,7 @@ export interface PredictionMarket {
 export interface Pool {
   pubkey: PublicKey;
   account: {
+    id: Buffer;
     startTime: number;
     endTime: number;
     poolAmount: number;
