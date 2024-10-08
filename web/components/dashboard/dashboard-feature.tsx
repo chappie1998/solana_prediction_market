@@ -24,11 +24,12 @@ import {
 } from '@prediction-market/anchor';
 import { PublicKey } from '@solana/web3.js';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
-import { getAllPools } from '@/app/api/getAllPool';
+// import { getAllPools } from '@/app/api/getAllPool';
 import { createPool } from '@/app/api/createPool';
 import { initialize } from '@/app/api/init';
 import { declareResult } from '@/app/api/declare_result';
-import { getPoolData } from '@/app/api/getPoolData';
+import { claim } from '@/app/api/claim';
+// import { getPoolData } from '@/app/api/getPoolData';
 
 ChartJS.register(
   CategoryScale,
@@ -56,7 +57,7 @@ export default function DashboardFeature() {
   const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
   const [gameResult, setGameResult] = useState<boolean | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
-  const [pools, setPools] = useState<any[]>([]); // Adjust the type as needed
+  // const [pools, setPools] = useState<any[]>([]); // Adjust the type as needed
 
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
@@ -66,29 +67,27 @@ export default function DashboardFeature() {
   const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
 
   const predictionmarketData = new PublicKey(
-    '9bx5asGzXneB7Ud2J9nkHDcQSPXZ8iTAfGZxWRYByGLq'
+    'H6uKzMuZCryKA9TtpToy44GuhSxMngV1BgJE2tCq7cxd'
   );
 
-  const poolkey = new PublicKey(
-    '9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd'
-  );
+  const poolkey = new PublicKey('85D2RJNT5sy5XB2ojxmpbbZ8CydmrXhpBaNcoTDtdPJB');;
   
   // 9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd
-  console.log("pools",pools);
+  // console.log("pools",pools);
 
-  useEffect(() => {
-    // Fetch pools data
-    const fetchPools = async () => {
-      try {
-        const fetchedPools = await getAllPools(program);
-        setPools(fetchedPools);
-      } catch (error) {
-        console.error('Error fetching pools:', error);
-      }
-    };
+  // useEffect(() => {
+  //   // Fetch pools data
+  //   const fetchPools = async () => {
+  //     try {
+  //       const fetchedPools = await getAllPools(program);
+  //       setPools(fetchedPools);
+  //     } catch (error) {
+  //       console.error('Error fetching pools:', error);
+  //     }
+  //   };
 
-    fetchPools();
-  }, [program]);
+  //   fetchPools();
+  // }, [program]);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -262,7 +261,7 @@ export default function DashboardFeature() {
                   wallet,
                   predictionmarketData,
                   1728382557,
-                  1728382857
+                  1728402013
                 )
               }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
@@ -275,7 +274,7 @@ export default function DashboardFeature() {
                 declareResult(
                   program,
                   wallet,
-                  usePredictionMarketProgram().programId,
+                  predictionmarketData,
                   poolkey,
                   1
                 )
@@ -285,18 +284,26 @@ export default function DashboardFeature() {
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet, poolkey, 150, true)}
+              onClick={() => vote(program, wallet, poolkey, 150000000, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes
             </button>
             <button
               onClick={() =>
-                vote(program, wallet, poolkey, 100, false)
+                vote(program, wallet, poolkey, 100000000, false)
               }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No
+            </button>
+            <button
+              onClick={() =>
+                claim(program, wallet, poolkey)
+              }
+              className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+            >
+              claim
             </button>
           </div>
         )}

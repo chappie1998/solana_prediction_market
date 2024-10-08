@@ -10,6 +10,9 @@ export const initialize = async (
   usdtMint: PublicKey,
   oracle: PublicKey
 ): Promise<PublicKey> => {
+  if (!payer.publicKey) {
+    throw new Error("Wallet not connected");
+  }
   const predictionMarket = Keypair.generate();
 
   await program.methods.initialize(usdtMint, oracle)
@@ -23,6 +26,7 @@ export const initialize = async (
 
   // Save the public key using the utility function
   // savePredictionMarketPublicKey(predictionMarket.publicKey);
-  
+  console.log("poolPubkey :", predictionMarket.publicKey.toBase58())
   return predictionMarket.publicKey;
+
 };

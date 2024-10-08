@@ -4,6 +4,7 @@ import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction } fr
 import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { findProgramAddress } from './utils';
 
 export const vote = async (
   program: Program<PredictionMarket>,
@@ -35,6 +36,12 @@ export const vote = async (
     new PublicKey(pool.noTokenMint),
     payer.publicKey
   );
+
+  const [poolSigner] = await findProgramAddress(
+    [Buffer.from("pool"), Buffer.from(pool.id)],
+    PREDICTION_MARKET_PROGRAM_ID
+  );
+  // , Buffer.from([pool.bump])
 
   // Check if accounts exist and create them if they don't
   const accountsToCheck = [
@@ -79,7 +86,44 @@ export const vote = async (
       noTokenMint: new PublicKey(pool.noTokenMint),
       userYesTokenAccount,
       userNoTokenAccount,
+      poolSigner,
       tokenProgram: TOKEN_PROGRAM_ID,
     })
     .rpc();
+
+    // const pool = await program.account.pool.fetch(poolPubkey);
+    // // console.log("pool signer", poolSigner.toBase58());
+    // const usdtMint = new PublicKey("EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe");
+    // const userUsdtAccount = await getAssociatedTokenAddress(usdtMint, payer.publicKey);
+    // // console.log("userUsdtAccount", userUsdtAccount.toBase58());
+    // const poolUsdtAccount = await getAssociatedTokenAddress(usdtMint, poolPubkey, true);
+    // // console.log("poolUsdtAccount", poolUsdtAccount.toBase58());
+    // const userYesTokenAccount = await getAssociatedTokenAddress(pool.yesTokenMint, payer.publicKey);
+    // // console.log("userYesTokenAccount", userYesTokenAccount.toBase58());
+    // const userNoTokenAccount = await getAssociatedTokenAddress(pool.noTokenMint, payer.publicKey);
+    // // console.log("userNoTokenAccount", userNoTokenAccount.toBase58());
+    // const [poolSigner] = await findProgramAddress(
+    //   [Buffer.from("pool"), poolPubkey.toBuffer() ],
+    //   program.programId
+    // );
+    // console.log("pool signer", poolSigner.toBase58())
+    
+    // // const poolSigner = new PublicKey("78JT6EsKtWbMuw1ibciMHKwATnois46Ceg78q1AeqpY");
+    // const tx = await program.methods.vote(new BN(amount), voteYes)
+    //   .accounts({
+    //     pool: poolPubkey,
+    //     user: payer.publicKey,
+    //     userUsdtAccount,
+    //     poolUsdtAccount,
+    //     yesTokenMint: pool.yesTokenMint,
+    //     noTokenMint: pool.noTokenMint,
+    //     userYesTokenAccount,
+    //     userNoTokenAccount,
+    //     poolSigner,
+    //     tokenProgram: TOKEN_PROGRAM_ID,
+    //   })
+    //   .rpc();
+  
+    // console.log(`Vote transaction signature: ${tx}`);
+    // return tx;
 };

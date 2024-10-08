@@ -101,6 +101,10 @@
         {
           "name": "endTime",
           "type": "i64"
+        },
+        {
+          "name": "bump",
+          "type": "u8"
         }
       ]
     },
@@ -118,7 +122,7 @@
         },
         {
           "name": "user",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true
         },
         {
@@ -148,6 +152,11 @@
         },
         {
           "name": "userNoTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolSigner",
           "isMut": true,
           "isSigner": false
         },
@@ -345,6 +354,14 @@
             "type": "u64"
           },
           {
+            "name": "yesAmount",
+            "type": "u64"
+          },
+          {
+            "name": "noAmount",
+            "type": "u64"
+          },
+          {
             "name": "status",
             "type": {
               "defined": "PoolStatus"
@@ -455,5 +472,8 @@
       "name": "ResultNotDeclared",
       "msg": "Result has not been declared"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "BA7zQC5fyuyV3d1XhnKuEHxcwHBLh84eSP2dEN6x2d1P"
+  }
 }
