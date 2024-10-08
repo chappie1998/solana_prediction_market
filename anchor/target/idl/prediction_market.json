@@ -1,219 +1,204 @@
 {
-  "address": "4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM",
-  "metadata": {
-    "name": "prediction_market",
-    "version": "0.1.0",
-    "spec": "0.1.0",
-    "description": "Created with Anchor"
-  },
+  "version": "0.1.0",
+  "name": "prediction_market",
   "instructions": [
     {
-      "name": "claim",
+      "name": "initialize",
       "docs": [
-        "Claim rewards from an ended prediction pool",
-        "Users can claim their rewards based on their winning votes"
-      ],
-      "discriminator": [
-        62,
-        198,
-        214,
-        193,
-        213,
-        159,
-        108,
-        210
+        "Initialize the prediction market",
+        "This function sets up the main prediction market account"
       ],
       "accounts": [
         {
-          "name": "pool",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "user_usdt_account",
-          "writable": true
-        },
-        {
-          "name": "pool_usdt_account",
-          "writable": true
-        },
-        {
-          "name": "yes_token_mint",
-          "writable": true
-        },
-        {
-          "name": "no_token_mint",
-          "writable": true
-        },
-        {
-          "name": "user_yes_token_account",
-          "writable": true
-        },
-        {
-          "name": "user_no_token_account",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "create_pool",
-      "docs": [
-        "Create a new prediction pool",
-        "This function creates a new pool with YES and NO token mints"
-      ],
-      "discriminator": [
-        233,
-        146,
-        209,
-        142,
-        207,
-        104,
-        64,
-        188
-      ],
-      "accounts": [
-        {
-          "name": "prediction_market",
-          "writable": true
-        },
-        {
-          "name": "pool",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  111,
-                  111,
-                  108
-                ]
-              }
-            ]
-          }
+          "name": "predictionMarket",
+          "isMut": true,
+          "isSigner": true
         },
         {
           "name": "owner",
-          "writable": true,
-          "signer": true
+          "isMut": true,
+          "isSigner": true
         },
         {
-          "name": "yes_token_mint",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  121,
-                  101,
-                  115,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool"
-              }
-            ]
-          }
-        },
-        {
-          "name": "no_token_mint",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  110,
-                  111,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "pool"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
         {
-          "name": "start_time",
+          "name": "usdtMint",
+          "type": "publicKey"
+        },
+        {
+          "name": "oracle",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "createPool",
+      "docs": [
+        "Create a new prediction pool",
+        "This function creates a new pool with YES and NO token mints"
+      ],
+      "accounts": [
+        {
+          "name": "predictionMarket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "yesTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "noTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "poolId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "startTime",
           "type": "i64"
         },
         {
-          "name": "end_time",
+          "name": "endTime",
           "type": "i64"
         }
       ]
     },
     {
-      "name": "declare_result",
+      "name": "vote",
+      "docs": [
+        "Vote in a prediction pool",
+        "Users can vote YES or NO by transferring USDT and receiving corresponding tokens"
+      ],
+      "accounts": [
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userUsdtAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolUsdtAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yesTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "noTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userYesTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userNoTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "voteYes",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "declareResult",
       "docs": [
         "Declare the result of a prediction pool",
         "Only the oracle can call this function to set the winner"
       ],
-      "discriminator": [
-        205,
-        129,
-        155,
-        217,
-        131,
-        167,
-        175,
-        38
-      ],
       "accounts": [
         {
-          "name": "prediction_market"
+          "name": "predictionMarket",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "pool",
-          "writable": true
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "oracle",
-          "signer": true
+          "isMut": false,
+          "isSigner": true
         },
         {
-          "name": "yes_token_mint"
+          "name": "yesTokenMint",
+          "isMut": false,
+          "isSigner": false
         },
         {
-          "name": "no_token_mint"
+          "name": "noTokenMint",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": [
@@ -224,204 +209,214 @@
       ]
     },
     {
-      "name": "initialize",
+      "name": "setOracle",
       "docs": [
-        "Initialize the prediction market",
-        "This function sets up the main prediction market account"
-      ],
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
+        "Set a new oracle for the prediction market",
+        "Only the owner can change the oracle"
       ],
       "accounts": [
         {
-          "name": "prediction_market",
-          "writable": true,
-          "signer": true
+          "name": "predictionMarket",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "owner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [
         {
-          "name": "usdt_mint",
-          "type": "pubkey"
-        },
-        {
-          "name": "oracle",
-          "type": "pubkey"
+          "name": "newOracle",
+          "type": "publicKey"
         }
       ]
     },
     {
-      "name": "pause_pool",
+      "name": "claim",
       "docs": [
-        "Pause an active prediction pool",
-        "Only the owner can pause a pool"
-      ],
-      "discriminator": [
-        160,
-        15,
-        12,
-        189,
-        160,
-        0,
-        243,
-        245
+        "Claim rewards from an ended prediction pool",
+        "Users can claim their rewards based on their winning votes"
       ],
       "accounts": [
         {
-          "name": "prediction_market"
-        },
-        {
           "name": "pool",
-          "writable": true
+          "isMut": true,
+          "isSigner": false
         },
         {
-          "name": "owner",
-          "signer": true
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "userUsdtAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolUsdtAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yesTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "noTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userYesTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userNoTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
         }
       ],
       "args": []
     },
     {
-      "name": "set_oracle",
+      "name": "pausePool",
       "docs": [
-        "Set a new oracle for the prediction market",
-        "Only the owner can change the oracle"
-      ],
-      "discriminator": [
-        186,
-        128,
-        81,
-        104,
-        74,
-        79,
-        18,
-        224
+        "Pause an active prediction pool",
+        "Only the owner can pause a pool"
       ],
       "accounts": [
         {
-          "name": "prediction_market",
-          "writable": true
+          "name": "predictionMarket",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "owner",
-          "signer": true
+          "isMut": false,
+          "isSigner": true
         }
       ],
-      "args": [
-        {
-          "name": "new_oracle",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "vote",
-      "docs": [
-        "Vote in a prediction pool",
-        "Users can vote YES or NO by transferring USDT and receiving corresponding tokens"
-      ],
-      "discriminator": [
-        227,
-        110,
-        155,
-        23,
-        136,
-        126,
-        172,
-        25
-      ],
-      "accounts": [
-        {
-          "name": "pool",
-          "writable": true
-        },
-        {
-          "name": "user",
-          "signer": true
-        },
-        {
-          "name": "user_usdt_account",
-          "writable": true
-        },
-        {
-          "name": "pool_usdt_account",
-          "writable": true
-        },
-        {
-          "name": "yes_token_mint",
-          "writable": true
-        },
-        {
-          "name": "no_token_mint",
-          "writable": true
-        },
-        {
-          "name": "user_yes_token_account",
-          "writable": true
-        },
-        {
-          "name": "user_no_token_account",
-          "writable": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        }
-      ],
-      "args": [
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "vote_yes",
-          "type": "bool"
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
     {
       "name": "Pool",
-      "discriminator": [
-        241,
-        154,
-        109,
-        4,
-        17,
-        177,
-        109,
-        188
-      ]
+      "docs": [
+        "The structure for individual prediction pools"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "endTime",
+            "type": "i64"
+          },
+          {
+            "name": "poolAmount",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": "PoolStatus"
+            }
+          },
+          {
+            "name": "winner",
+            "type": "u8"
+          },
+          {
+            "name": "yesTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "noTokenMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "totalWinningTokens",
+            "type": "u64"
+          }
+        ]
+      }
     },
     {
       "name": "PredictionMarket",
-      "discriminator": [
-        117,
-        150,
-        97,
-        152,
-        119,
-        58,
-        51,
-        58
-      ]
+      "docs": [
+        "The main prediction market account structure"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "usdtMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "oracle",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "PoolStatus",
+      "docs": [
+        "The possible statuses of a prediction pool"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Ended"
+          }
+        ]
+      }
     }
   ],
   "errors": [
@@ -459,102 +454,6 @@
       "code": 6006,
       "name": "ResultNotDeclared",
       "msg": "Result has not been declared"
-    }
-  ],
-  "types": [
-    {
-      "name": "Pool",
-      "docs": [
-        "The structure for individual prediction pools"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "start_time",
-            "type": "i64"
-          },
-          {
-            "name": "end_time",
-            "type": "i64"
-          },
-          {
-            "name": "pool_amount",
-            "type": "u64"
-          },
-          {
-            "name": "status",
-            "type": {
-              "defined": {
-                "name": "PoolStatus"
-              }
-            }
-          },
-          {
-            "name": "winner",
-            "type": "u8"
-          },
-          {
-            "name": "yes_token_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "no_token_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "total_winning_tokens",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PoolStatus",
-      "docs": [
-        "The possible statuses of a prediction pool"
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Active"
-          },
-          {
-            "name": "Paused"
-          },
-          {
-            "name": "Ended"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PredictionMarket",
-      "docs": [
-        "The main prediction market account structure"
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "usdt_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "oracle",
-            "type": "pubkey"
-          },
-          {
-            "name": "owner",
-            "type": "pubkey"
-          }
-        ]
-      }
     }
   ]
 }

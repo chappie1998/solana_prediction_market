@@ -1,11 +1,19 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
+// use light_compressed_token::light_compressed_token::{create_token_pool, mint_to, burn};
+// use light_compressed_token::mint_sdk::create_create_token_pool_instruction;
+// use light_compressed_token::program::LightCompressedToken;
+// use light_sdk::{light_system_accounts, LightTraits};
+// use light_compressed_token::{mint_sdk::create_create_token_pool_instruction, CreateTokenPoolInstruction};
+
+// use light_compressed_token::process_transfer::CreateTokenPoolInstruction;
 
 // Declare the program ID
-declare_id!("4akwD1qFEiUKuWawjStUza5x1jHTewfhBotukh2UdhDM");
+declare_id!("BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA");
 
 #[program]
 pub mod prediction_market {
+
     use super::*;
 
     /// Initialize the prediction market
@@ -20,10 +28,11 @@ pub mod prediction_market {
 
     /// Create a new prediction pool
     /// This function creates a new pool with YES and NO token mints
-    pub fn create_pool(ctx: Context<CreatePool>, start_time: i64, end_time: i64) -> Result<()> {
+    pub fn create_pool(ctx: Context<CreatePool>, pool_id: [u8; 32], start_time: i64, end_time: i64) -> Result<()> {
         require!(ctx.accounts.prediction_market.owner == *ctx.accounts.owner.key, PredictionMarketError::NotOwner);
         
         let pool = &mut ctx.accounts.pool;
+        pool.id = pool_id;
         pool.start_time = start_time;
         pool.end_time = end_time;
         pool.pool_amount = 0;
@@ -32,6 +41,15 @@ pub mod prediction_market {
         pool.no_token_mint = ctx.accounts.no_token_mint.key();
         pool.bump = ctx.bumps.pool;
         pool.total_winning_tokens = 0; // Initialize to 0, will be set when result is declared
+        // let yes_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
+        // let no_compressed_token_ = create_create_token_pool_instruction(ctx.accounts.owner.key, &pool.yes_token_mint);
+        // let cpi_program = ctx.accounts.compressed_token_program.to_account_info();
+        // let seeds = &[
+        //     pool.to_account_info().key.as_ref(),
+        //     &[pool.bump],
+        // ];
+        // let signer = &[&seeds[..]];
+        // let cpi_ctx = CpiContext::new_with_signer(cpi_program, yes_compressed_token_.accounts, signer);
 
         Ok(())
     }
@@ -181,6 +199,7 @@ pub struct PredictionMarket {
 /// The structure for individual prediction pools
 #[account]
 pub struct Pool {
+    pub id: [u8; 32],
     pub start_time: i64,
     pub end_time: i64,
     pub pool_amount: u64,
@@ -220,7 +239,7 @@ pub struct CreatePool<'info> {
         init,
         payer = owner,
         space = 8 + 32 + 8 + 8 + 8 + 1 + 1 + 32 + 32 + 1 + 8, // Added 8 for total_winning_tokens
-        seeds = [b"pool".as_ref()],
+        seeds = [b"pool".as_ref(), &pool_id],
         bump
     )]
     pub pool: Account<'info, Pool>,

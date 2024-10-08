@@ -1,10 +1,11 @@
 import { Keypair, PublicKey } from '@solana/web3.js';
 import { Program} from '@coral-xyz/anchor';
 import {  PredictionMarket } from '@prediction-market/anchor';
+import { WalletContextState } from '@solana/wallet-adapter-react';
 
 export const declareResult = async (
   program: Program<PredictionMarket>,
-  oracle: Keypair,
+  oracle: WalletContextState,
   predictionMarketPubkey: PublicKey,
   poolPubkey: PublicKey,
   winner: number
@@ -15,10 +16,9 @@ export const declareResult = async (
     .accounts({
       predictionMarket: predictionMarketPubkey,
       pool: poolPubkey,
-      oracle: oracle.publicKey,
+      oracle: oracle.publicKey?.toString(),
       yesTokenMint: new PublicKey(pool.yesTokenMint),
       noTokenMint: new PublicKey(pool.noTokenMint),
-    }) 
-    .signers([oracle])// The wallet adapter will handle signing
+    }) // The wallet adapter will handle signing
     .rpc();
 };

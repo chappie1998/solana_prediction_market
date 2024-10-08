@@ -8,5 +8,5 @@ export const getPoolData = async (
   poolPubkey: PublicKey
 ): Promise<Pool['account']> => {
   const poolData = await program.account.pool.fetch(poolPubkey);
-  return poolData as Pool['account'];
+  return poolData as unknown as Pool['account'];
 };

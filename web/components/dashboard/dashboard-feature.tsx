@@ -13,18 +13,22 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartOptions,
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { vote } from '@/app/api/vote';
 import { useWallet } from '@solana/wallet-adapter-react';
-import * as anchor from '@coral-xyz/anchor';
-import { Program } from '@coral-xyz/anchor';
-// import { PredictionMarket } from '@/app/api/types';
-import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
-import { Keypair, PublicKey } from '@solana/web3.js';
-import { workspace } from '@coral-xyz/anchor';
+import {
+  PREDICTION_MARKET_PROGRAM_ID,
+  PredictionMarket,
+} from '@prediction-market/anchor';
+import { PublicKey } from '@solana/web3.js';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
 import { getAllPools } from '@/app/api/getAllPool';
+import { createPool } from '@/app/api/createPool';
+import { initialize } from '@/app/api/init';
+import { declareResult } from '@/app/api/declare_result';
+import { getPoolData } from '@/app/api/getPoolData';
 
 ChartJS.register(
   CategoryScale,
@@ -45,16 +49,46 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default async function DashboardFeature() {
+export default function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
   const [userVote, setUserVote] = useState<'yes' | 'no' | null>(null);
   const [gameResult, setGameResult] = useState<boolean | null>(null);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
+  const [pools, setPools] = useState<any[]>([]); // Adjust the type as needed
+
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
-  const pools = await getAllPools(program);
+  const usdt_mint = new PublicKey(
+    'EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe'
+  );
+  const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
+
+  const predictionmarketData = new PublicKey(
+    '9bx5asGzXneB7Ud2J9nkHDcQSPXZ8iTAfGZxWRYByGLq'
+  );
+
+  const poolkey = new PublicKey(
+    '9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd'
+  );
+  
+  // 9efVpxLcVE5xXD7cWJDcBCr8N5RMXYuAWmnLYtiJmrsd
+  console.log("pools",pools);
+
+  useEffect(() => {
+    // Fetch pools data
+    const fetchPools = async () => {
+      try {
+        const fetchedPools = await getAllPools(program);
+        setPools(fetchedPools);
+      } catch (error) {
+        console.error('Error fetching pools:', error);
+      }
+    };
+
+    fetchPools();
+  }, [program]);
 
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
@@ -98,6 +132,7 @@ export default async function DashboardFeature() {
       clearInterval(priceInterval);
       clearInterval(timer);
     };
+    // Removed currentPrice from dependency array
   }, []);
 
   const determineResult = () => {
@@ -132,7 +167,7 @@ export default async function DashboardFeature() {
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false, // Allow chart to grow with size
     plugins: {
@@ -153,11 +188,10 @@ export default async function DashboardFeature() {
         },
       },
       tooltip: {
-        mode: 'index',
-        intersect: false,
+        // Tooltip-specific options (if any)
       },
     },
-    hover: {
+    interaction: {
       mode: 'nearest',
       intersect: false,
     },
@@ -178,7 +212,7 @@ export default async function DashboardFeature() {
           color: 'rgba(200, 200, 200, 0.3)', // Light grid color
         },
         ticks: {
-          callback: function (value: number) {
+          callback: function (value: number | string) {
             return '$' + value; // Add $ symbol to Y axis
           },
         },
@@ -216,13 +250,50 @@ export default async function DashboardFeature() {
         {!userVote && timeLeft > 0 && (
           <div className="space-x-4">
             <button
-              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , true  ) }
+              onClick={() => initialize(program, wallet, usdt_mint, oracle)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
-              Yes
+              INIT
             </button>
             <button
-              onClick={() => vote(program, wallet ,pools[0].pubkey, 100 , false ) }
+              onClick={() =>
+                createPool(
+                  program,
+                  wallet,
+                  predictionmarketData,
+                  1728382557,
+                  1728382857
+                )
+              }
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              create_pool
+            </button>
+
+            <button
+              onClick={() =>
+                declareResult(
+                  program,
+                  wallet,
+                  usePredictionMarketProgram().programId,
+                  poolkey,
+                  1
+                )
+              }
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              declare result
+            </button>
+            <button
+              onClick={() => vote(program, wallet, poolkey, 150, true)}
+              className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+            >
+              yes
+            </button>
+            <button
+              onClick={() =>
+                vote(program, wallet, poolkey, 100, false)
+              }
               className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
             >
               No

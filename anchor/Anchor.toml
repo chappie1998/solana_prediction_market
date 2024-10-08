@@ -1,12 +1,12 @@
 [toolchain]
-anchor_version = "0.30.1"
+anchor_version = "0.29.0"
 
 [features]
 seeds = false
 skip-lint = false
 
 [programs.localnet]
-prediction_market = "EYJtmoTczsfe2cNcWKqpwFckgf47YwiL3dPD26mAcJ3v"
+prediction_market = "BXeey5A2ZJQGswoA3nVJTa6aoYq6BSzNb2vwfMsSQtPA"
 
 [registry]
 url = "https://api.apr.dev"
