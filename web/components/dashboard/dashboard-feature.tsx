@@ -13,16 +13,16 @@ import {
   Tooltip,
   Legend,
   Filler,
+  ChartOptions,
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { vote } from '@/app/api/vote';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Program } from '@coral-xyz/anchor';
 import {
   PREDICTION_MARKET_PROGRAM_ID,
   PredictionMarket,
 } from '@prediction-market/anchor';
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { usePredictionMarketProgram } from '../prediction-market/prediction-market-data-access';
 import { getAllPools } from '@/app/api/getAllPool';
 import { createPool } from '@/app/api/createPool';
@@ -49,7 +49,7 @@ interface PriceData {
 
 const PRICE_UPDATE_INTERVAL = 5000; // 5 seconds in milliseconds
 
-export default async function DashboardFeature() {
+export default function DashboardFeature() {
   const [currentPrice, setCurrentPrice] = useState<number | null>(null);
   const [targetPrice, setTargetPrice] = useState<number>(147.5);
   const [timeLeft, setTimeLeft] = useState<number>(300); // 5 minutes in seconds
@@ -65,9 +65,10 @@ export default async function DashboardFeature() {
   );
   const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
 
-  // let pool =  await getPoolData(program, pools[0]);
-  
-  const predictionmarketData = new PublicKey('2FgsfwhhtcJK1a3tfRWaGMdKaUZwoQVXkAqPZaBXyv5F');
+  const predictionmarketData = new PublicKey(
+    '2FgsfwhhtcJK1a3tfRWaGMdKaUZwoQVXkAqPZaBXyv5F'
+  );
+
   useEffect(() => {
     // Fetch pools data
     const fetchPools = async () => {
@@ -81,8 +82,7 @@ export default async function DashboardFeature() {
 
     fetchPools();
   }, [program]);
-  
-  // console.log("pool pubkey", pools[0]);
+
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
     const fetchPrice = async () => {
@@ -125,8 +125,8 @@ export default async function DashboardFeature() {
       clearInterval(priceInterval);
       clearInterval(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPrice]);
+    // Removed currentPrice from dependency array
+  }, []);
 
   const determineResult = () => {
     if (currentPrice !== null) {
@@ -160,7 +160,7 @@ export default async function DashboardFeature() {
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false, // Allow chart to grow with size
     plugins: {
@@ -181,11 +181,10 @@ export default async function DashboardFeature() {
         },
       },
       tooltip: {
-        mode: 'index',
-        intersect: false,
+        // Tooltip-specific options (if any)
       },
     },
-    hover: {
+    interaction: {
       mode: 'nearest',
       intersect: false,
     },
@@ -206,7 +205,7 @@ export default async function DashboardFeature() {
           color: 'rgba(200, 200, 200, 0.3)', // Light grid color
         },
         ticks: {
-          callback: function (value: number) {
+          callback: function (value: number | string) {
             return '$' + value; // Add $ symbol to Y axis
           },
         },
@@ -250,7 +249,16 @@ export default async function DashboardFeature() {
               INIT
             </button>
             <button
-              onClick={() => createPool(program, wallet, predictionmarketData, Buffer.from("1"),  1728369900, 1728370200)}
+              onClick={() =>
+                createPool(
+                  program,
+                  wallet,
+                  predictionmarketData,
+                  Buffer.from('1'),
+                  1728369900,
+                  1728370200
+                )
+              }
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               create_pool
@@ -271,7 +279,7 @@ export default async function DashboardFeature() {
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet, pools[0].pubkey, 150, true)}
+              onClick={() => vote(program, wallet, pools[0]?.pubkey, 150, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes
