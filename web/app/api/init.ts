@@ -2,6 +2,7 @@ import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import { Program } from '@coral-xyz/anchor';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { PredictionMarket } from '@prediction-market/anchor';
+// import { savePredictionMarketPublicKey } from './utils';
 
 export const initialize = async (
   program: Program<PredictionMarket>,
@@ -20,5 +21,8 @@ export const initialize = async (
   .signers([predictionMarket])
   .rpc();
 
+  // Save the public key using the utility function
+  // savePredictionMarketPublicKey(predictionMarket.publicKey);
+  
   return predictionMarket.publicKey;
 };

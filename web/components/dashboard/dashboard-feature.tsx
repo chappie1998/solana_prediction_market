@@ -64,6 +64,8 @@ export default async function DashboardFeature() {
     'EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe'
   );
   const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
+
+  // let pool =  await getPoolData(program, pools[0]);
   
   const predictionmarketData = new PublicKey('2FgsfwhhtcJK1a3tfRWaGMdKaUZwoQVXkAqPZaBXyv5F');
   useEffect(() => {
