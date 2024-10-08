@@ -60,10 +60,11 @@ export default function DashboardFeature() {
   const program = usePredictionMarketProgram().program;
   const wallet = useWallet();
   const usdt_mint = new PublicKey(
-    'G4pN19MzNyHqzas1WFJzHSpxVHJQaozojBoZtiHtbgT5'
+    'EcifQ3Fs4CVDNTpWQBWta85ctNrHNGWncDtXcux5NULe'
   );
   const oracle = new PublicKey('BX6RJHGbi7msj7t1ECCX6T1ZvvetHDK6UkjzAhPfWngq');
-
+  
+  const predictionmarketData = new PublicKey('2FgsfwhhtcJK1a3tfRWaGMdKaUZwoQVXkAqPZaBXyv5F');
   useEffect(() => {
     // Fetch pools data
     const fetchPools = async () => {
@@ -77,7 +78,8 @@ export default function DashboardFeature() {
 
     fetchPools();
   }, [program]);
-
+  
+  // console.log("pool pubkey", pools[0]);
   useEffect(() => {
     // Fetch real-time Solana price from CoinGecko API
     const fetchPrice = async () => {
@@ -245,7 +247,7 @@ export default function DashboardFeature() {
               INIT
             </button>
             <button
-              onClick={() => createPool(program, wallet, usdt_mint, 100, 100)}
+              onClick={() => createPool(program, wallet, predictionmarketData, Buffer.from("1"),  1728369900, 1728370200)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               create_pool
@@ -266,7 +268,7 @@ export default function DashboardFeature() {
               declare result
             </button>
             <button
-              onClick={() => vote(program, wallet, pools[0]?.pubkey, 100, true)}
+              onClick={() => vote(program, wallet, pools[0]?.pubkey, 150, true)}
               className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
             >
               yes

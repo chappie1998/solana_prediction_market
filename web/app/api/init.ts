@@ -1,4 +1,4 @@
-import { Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
 import { Program } from '@coral-xyz/anchor';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { PredictionMarket } from '@prediction-market/anchor';
@@ -15,6 +15,7 @@ export const initialize = async (
     .accounts({
       predictionMarket: predictionMarket.publicKey,
       owner: payer.publicKey?.toString(),
+      systemProgram: SystemProgram.programId,
   })
   .signers([predictionMarket])
   .rpc();

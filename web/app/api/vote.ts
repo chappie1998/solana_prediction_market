@@ -3,6 +3,7 @@ import { Program, BN } from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress } from '@solana/spl-token';
 import { PREDICTION_MARKET_PROGRAM_ID, PredictionMarket } from '@prediction-market/anchor';
 import { WalletContextState } from '@solana/wallet-adapter-react';
+import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 
 export const vote = async (
@@ -49,6 +50,7 @@ export const vote = async (
       noTokenMint: new PublicKey(pool.noTokenMint),
       userYesTokenAccount,
       userNoTokenAccount,
+      tokenProgram: TOKEN_PROGRAM_ID,
     }) // The wallet adapter will handle signing
     .rpc();
 };
